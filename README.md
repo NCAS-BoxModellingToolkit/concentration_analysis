@@ -1,6 +1,6 @@
 # concentration_analysis
-Analyse simulated concentrations
+Analyse simulated concentrations.
 
-Plotting and statistical tools to work on simulate concentrations.
+Plotting and statistical tools to work on simulated concentrations.
 
 The src/package layout is explained [here](https://www.pyopensci.org/python-package-guide/package-structure-code/python-package-structure.html)

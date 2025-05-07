@@ -42,10 +42,16 @@ csv_path = str('/Users/user/Library/CloudStorage/OneDrive-TheUniversity' +
 	'ofManchester/NCAS/MCM_working_group/guaiacol/' +
 	'SMPS_total_N_SA_V_Mass_for_MCM_corrected.csv')
 
+# column of observations file containing times
+t_col_indx = 1
+# column of observations file containing particle mass concentrations
+m_col_indx = 9
+
 # user-defined variables end --------------------------------
 
 # define function
-def conc_plot(res_path, labels, conc_to_plot, PyCHAM_path, plot_name, save_path, csv_path):
+def conc_plot(res_path, labels, conc_to_plot, PyCHAM_path, plot_name, save_path, 
+	csv_path, t_col_indx, m_col_indx):
 
 	# prepare plot(s)
 	fig, (ax0) = plt.subplots(nrows=1, ncols=1, figsize=(6, 4))
@@ -108,8 +114,8 @@ def conc_plot(res_path, labels, conc_to_plot, PyCHAM_path, plot_name, save_path,
 	# open observed concentration
 	wb = np.loadtxt(csv_path, delimiter = ',', skiprows = 1, dtype='str')
 	# get observed time through experiment and particle mass concentration
-	obs_pm_thr = wb[:, 1].astype('float')
-	obs_pm_mass = wb[:, 9].astype('float')
+	obs_pm_thr = wb[:, t_col_indx].astype('float')
+	obs_pm_mass = wb[:, m_col_indx].astype('float')
 
 	ax0.plot(obs_pm_thr, obs_pm_mass, label = 'observed')
 
@@ -142,4 +148,5 @@ def self_def(dir_path_value):
 	return(self)
 
 # call function
-conc_plot(res_path, labels, conc_to_plot, PyCHAM_path, plot_name, save_path, csv_path)
+conc_plot(res_path, labels, conc_to_plot, PyCHAM_path, plot_name, save_path, 
+	csv_path, t_col_indx, m_col_indx)
