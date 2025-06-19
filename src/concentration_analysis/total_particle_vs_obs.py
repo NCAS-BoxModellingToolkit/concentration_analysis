@@ -16,13 +16,51 @@ import openpyxl # for opening excel file
 res_path = [str('/Users/user/Library/CloudStorage/' +
 	'OneDrive-TheUniversityofManchester/NCAS/' +
 	'MCM_working_group/guaiacol/PyCHAM_output/' +
-	'guaiacol_constrained_1e-3w'), str('/Users/user/Library/CloudStorage/' +
+	'guaiacol_constrained_1e-2w_mt240'), 
+	str('/Users/user/Library/CloudStorage/' +
 	'OneDrive-TheUniversityofManchester/NCAS/' +
 	'MCM_working_group/guaiacol/PyCHAM_output/' +
-	'guaiacol_constrained_1e-1w')]
+	'guaiacol_constrained_1e-2w_mt24p0'), 
+	str('/Users/user/Library/CloudStorage/' +
+	'OneDrive-TheUniversityofManchester/NCAS/' +
+	'MCM_working_group/guaiacol/PyCHAM_output/' +
+	'guaiacol_constrained_1e-2w_mt2p40'),
+	str('/Users/user/Library/CloudStorage/' +
+	'OneDrive-TheUniversityofManchester/NCAS/' +
+	'MCM_working_group/guaiacol/PyCHAM_output/' +
+	'guaiacol_constrained_1e-3w_mt240'), 
+	str('/Users/user/Library/CloudStorage/' +
+	'OneDrive-TheUniversityofManchester/NCAS/' +
+	'MCM_working_group/guaiacol/PyCHAM_output/' +
+	'guaiacol_constrained_1e-3w_mt24p0'), 
+	str('/Users/user/Library/CloudStorage/' +
+	'OneDrive-TheUniversityofManchester/NCAS/' +
+	'MCM_working_group/guaiacol/PyCHAM_output/' +
+	'guaiacol_constrained_1e-3w_mt2p40'),
+	str('/Users/user/Library/CloudStorage/' +
+	'OneDrive-TheUniversityofManchester/NCAS/' +
+	'MCM_working_group/guaiacol/PyCHAM_output/' +
+	'guaiacol_constrained_1e-4w_mt240'), 
+	str('/Users/user/Library/CloudStorage/' +
+	'OneDrive-TheUniversityofManchester/NCAS/' +
+	'MCM_working_group/guaiacol/PyCHAM_output/' +
+	'guaiacol_constrained_1e-4w_mt24p0'), 
+	str('/Users/user/Library/CloudStorage/' +
+	'OneDrive-TheUniversityofManchester/NCAS/' +
+	'MCM_working_group/guaiacol/PyCHAM_output/' +
+	'guaiacol_constrained_1e-4w_mt2p40')]
 
 # set corresponding (to path to results) list of plot labels
-labels = [str('$\mathrm{C_w=1x10^3\; \u00B5 g \, m\u207B\u00B3}$'), str('$\mathrm{C_w=1x10^5\; \u00B5 g \, m\u207B\u00B3}$')]
+labels = [
+str('$C_w\mathrm{=1x10^{-2}\; g \, m\u207B\u00B3}$, $k_e$=4x10$^{-3}\,\mathrm{s^{-1}}$'),
+str('$C_w\mathrm{=1x10^{-2}\; g \, m\u207B\u00B3}$, $k_e$=4x10$^{-2}\,\mathrm{s^{-1}}$'),
+str('$C_w\mathrm{=1x10^{-2}\; g \, m\u207B\u00B3}$, $k_e$=4x10$^{-1}\,\mathrm{s^{-1}}$'),
+str('$C_w\mathrm{=1x10^{-3}\; g \, m\u207B\u00B3}$, $k_e$=4x10$^{-3}\,\mathrm{s^{-1}}$'),
+str('$C_w\mathrm{=1x10^{-3}\; g \, m\u207B\u00B3}$, $k_e$=4x10$^{-2}\,\mathrm{s^{-1}}$'), 
+str('$C_w\mathrm{=1x10^{-3}\; g \, m\u207B\u00B3}$, $k_e$=4x10$^{-1}\,\mathrm{s^{-1}}$'),
+str('$C_w\mathrm{=1x10^{-4}\; g \, m\u207B\u00B3}$, $k_e$=4x10$^{-3}\,\mathrm{s^{-1}}$'),
+str('$C_w\mathrm{=1x10^{-4}\; g \, m\u207B\u00B3}$, $k_e$=4x10$^{-2}\,\mathrm{s^{-1}}$'), 
+str('$C_w\mathrm{=1x10^{-4}\; g \, m\u207B\u00B3}$, $k_e$=4x10$^{-1}\,\mathrm{s^{-1}}$')]
 
 # concentration(s) to plot (m for mass concentration)
 conc_to_plot = ['m']
@@ -71,8 +109,11 @@ def conc_plot(res_path, labels, conc_to_plot, PyCHAM_path, plot_name, save_path,
 		self = self_def(res_pathi)
 
 		# import results
-		for prog in retr_out.retr_out(self):
-			prog = prog
+		try:
+			for prog in retr_out.retr_out(self):
+				prog = prog
+		except:
+			continue
 
 		# get concentrations
 		yrec = np.zeros((self.ro_obj.yrec.shape[0], 
@@ -117,11 +158,11 @@ def conc_plot(res_path, labels, conc_to_plot, PyCHAM_path, plot_name, save_path,
 	obs_pm_thr = wb[:, t_col_indx].astype('float')
 	obs_pm_mass = wb[:, m_col_indx].astype('float')
 
-	ax0.plot(obs_pm_thr, obs_pm_mass, label = 'observed')
+	ax0.plot(obs_pm_thr, obs_pm_mass, 'k', label = 'observed')
 
 	ax0.set_ylabel(str('PM mass concentration ('  + 
 		'$\mathrm{\u00B5}$g$\,$m\u207B\u00B3)\n(no water)'), fontsize = 14)
-	ax0.set_xlabel(str('time through simulation (hours)'), fontsize = 14)
+	ax0.set_xlabel(str('time (hours)'), fontsize = 14)
 	ax0.yaxis.set_tick_params(labelsize = 14, 
 		direction = 'in', which='both')
 	ax0.xaxis.set_tick_params(labelsize = 14, 
@@ -132,7 +173,6 @@ def conc_plot(res_path, labels, conc_to_plot, PyCHAM_path, plot_name, save_path,
 	if (os.path.isdir(str(save_path)) == False):
 		os.mkdir(str(save_path))
 	plt.savefig(str(save_path + '/' + plot_name + '.pdf'))
-
 		
 	return()
 
