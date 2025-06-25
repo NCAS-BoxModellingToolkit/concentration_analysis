@@ -16,39 +16,11 @@ import openpyxl # for opening excel file
 res_path = [str('/Users/user/Library/CloudStorage/' +
 	'OneDrive-TheUniversityofManchester/NCAS/' +
 	'MCM_working_group/guaiacol/PyCHAM_output/' +
-	'guaiacol_constrained_1e-2w_mt240'), 
+	'guaiacol_constrained_1e-3w_mt2p40_fullELVOC'),  
 	str('/Users/user/Library/CloudStorage/' +
 	'OneDrive-TheUniversityofManchester/NCAS/' +
 	'MCM_working_group/guaiacol/PyCHAM_output/' +
-	'guaiacol_constrained_1e-2w_mt24p0'), 
-	str('/Users/user/Library/CloudStorage/' +
-	'OneDrive-TheUniversityofManchester/NCAS/' +
-	'MCM_working_group/guaiacol/PyCHAM_output/' +
-	'guaiacol_constrained_1e-2w_mt2p40'),
-	str('/Users/user/Library/CloudStorage/' +
-	'OneDrive-TheUniversityofManchester/NCAS/' +
-	'MCM_working_group/guaiacol/PyCHAM_output/' +
-	'guaiacol_constrained_1e-3w_mt240'), 
-	str('/Users/user/Library/CloudStorage/' +
-	'OneDrive-TheUniversityofManchester/NCAS/' +
-	'MCM_working_group/guaiacol/PyCHAM_output/' +
-	'guaiacol_constrained_1e-3w_mt24p0'), 
-	str('/Users/user/Library/CloudStorage/' +
-	'OneDrive-TheUniversityofManchester/NCAS/' +
-	'MCM_working_group/guaiacol/PyCHAM_output/' +
-	'guaiacol_constrained_1e-3w_mt2p40'),
-	str('/Users/user/Library/CloudStorage/' +
-	'OneDrive-TheUniversityofManchester/NCAS/' +
-	'MCM_working_group/guaiacol/PyCHAM_output/' +
-	'guaiacol_constrained_1e-4w_mt240'), 
-	str('/Users/user/Library/CloudStorage/' +
-	'OneDrive-TheUniversityofManchester/NCAS/' +
-	'MCM_working_group/guaiacol/PyCHAM_output/' +
-	'guaiacol_constrained_1e-4w_mt24p0'), 
-	str('/Users/user/Library/CloudStorage/' +
-	'OneDrive-TheUniversityofManchester/NCAS/' +
-	'MCM_working_group/guaiacol/PyCHAM_output/' +
-	'guaiacol_constrained_1e-4w_mt2p40')]
+	'guaiacol_constrained_1e-3w_mt2p40')]
 
 # set corresponding (to path to results) list of plot labels
 labels = [
@@ -61,9 +33,11 @@ str('$C_w\mathrm{=1x10^{-3}\; g \, m\u207B\u00B3}$, $k_e$=4x10$^{-1}\,\mathrm{s^
 str('$C_w\mathrm{=1x10^{-4}\; g \, m\u207B\u00B3}$, $k_e$=4x10$^{-3}\,\mathrm{s^{-1}}$'),
 str('$C_w\mathrm{=1x10^{-4}\; g \, m\u207B\u00B3}$, $k_e$=4x10$^{-2}\,\mathrm{s^{-1}}$'), 
 str('$C_w\mathrm{=1x10^{-4}\; g \, m\u207B\u00B3}$, $k_e$=4x10$^{-1}\,\mathrm{s^{-1}}$')]
-
+labels = [str('$C_w\mathrm{=1x10^{-3}\; g \, m\u207B\u00B3}$, $k_e$=4x10$^{-1}\,\mathrm{s^{-1}}$ with \n% 6.99D-11*0.04 : GUAIACOL + OH = ELVOCp ; \n% KRO2NO : ELVOCp + NO = ELVOC ; \n% KRO2HO2 : ELVOCp + HO2 = ELVOCpp ;; \n% 4.0D-10*RO2 : ELVOCp = ELVOCpp ;'),
+str('$C_w\mathrm{=1x10^{-3}\; g \, m\u207B\u00B3}$, $k_e$=4x10$^{-1}\,\mathrm{s^{-1}}$ with \n6.99D-11*0.005 : GUAIACOL + OH = ELVOC ;')]
 # concentration(s) to plot (m for mass concentration)
 conc_to_plot = ['m']
+
 
 # path to PyCHAM
 PyCHAM_path = str('/Users/user/Documents/GitHub/PyCHAM/PyCHAM')
@@ -92,7 +66,7 @@ def conc_plot(res_path, labels, conc_to_plot, PyCHAM_path, plot_name, save_path,
 	csv_path, t_col_indx, m_col_indx):
 
 	# prepare plot(s)
-	fig, (ax0) = plt.subplots(nrows=1, ncols=1, figsize=(6, 4))
+	fig, (ax0) = plt.subplots(nrows=1, ncols=1, figsize=(9, 6))
 
 	# ensure PyCHAM can be seen
 	sys.path.append(PyCHAM_path)
@@ -149,6 +123,9 @@ def conc_plot(res_path, labels, conc_to_plot, PyCHAM_path, plot_name, save_path,
 		# sum over components for total dry particle mass concentration
 		# over time (ug/m3)
 		ppc = np.sum(ppc[:, 0:nc], axis=1)
+
+		if 'fullELVOC' in res_pathi:
+			thr -= 1.
 
 		ax0.plot(thr, ppc, label = labels[resi])
 

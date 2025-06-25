@@ -14,14 +14,14 @@ import os
 res_path = str('/Users/user/Library/CloudStorage/' +
 	'OneDrive-TheUniversityofManchester/NCAS/' +
 	'MCM_working_group/guaiacol/PyCHAM_output/' +
-	'guaiacol_constrained_1e-3w_mt2p40')
+	'guaiacol_constrained_1e-3w_mt2p40_fullELVOC')
 
 # path to PyCHAM
 PyCHAM_path = str('/Users/user/Documents/GitHub/PyCHAM/PyCHAM')
 
 # chemical scheme name(s) of component to plot
 plot_name = ['DNOMCATECHOL', 'NOMCATECHOL', 'DNGUAIACOL', 'NGUAIACOL', 'OMPBZQONE', 'GUAIAOXMUC', 'NCATECHOL', 'OMCATECHOL', 'OMC4CO142OH', 'OMC5CO14OH', 'OMCATPBZQONE']
-
+plot_name = ['GUAIACOL', 'DNGUAIACOL', 'NOMCATECHOL']
 # phase(s) to plot
 phase = ['g', 'p', 'w']
 
@@ -36,7 +36,7 @@ m_col_indx = 1
 
 # state which components in plot_name have corresponding observations
 obs_plot = np.zeros((len(plot_name)))
-obs_plot[0] = 0
+obs_plot[0] = 1
 
 # user-defined variables end --------------------------------
 
@@ -108,7 +108,7 @@ def conc_plot(res_path, plot_name, phase, PyCHAM_path, csv_path, obs_plot,
 				# particle mass concentration
 				obs_thr = wb[:, t_col_indx].astype('float')
 				obs_g = wb[:, m_col_indx].astype('float')
-				ax0.plot(obs_thr, obs_g, 'k', label = str('observed ' + 
+				ax0.plot(obs_thr+1., obs_g, 'k', label = str('observed ' + 
 					plot_name[i] + ' gas-phase'))
 
 		if 'p' in phase: # particle-phase concentrations
