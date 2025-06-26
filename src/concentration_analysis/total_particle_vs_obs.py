@@ -12,25 +12,22 @@ import openpyxl # for opening excel file
 
 # user-defined variables start --------------------------------
 
+# start of paths
+base_path = 'C:/Users/Psymo/OneDrive - The University of Manchester/'
 # set list of path to results
-res_path = [str('/Users/user/Library/CloudStorage/' +
-	'OneDrive-TheUniversityofManchester/NCAS/' +
+res_path = [str(base_path + 'NCAS/' +
 	'MCM_working_group/guaiacol/PyCHAM_output/' +
 	'guaiacol_constrained_1e-2w_mt2p40_fullELVOC'),  
-	str('/Users/user/Library/CloudStorage/' +
-	'OneDrive-TheUniversityofManchester/NCAS/' +
+	str(base_path + 'NCAS/' +
 	'MCM_working_group/guaiacol/PyCHAM_output/' +
 	'guaiacol_constrained_1e-2w_mt24p0_fullELVOC'),  
-	str('/Users/user/Library/CloudStorage/' +
-	'OneDrive-TheUniversityofManchester/NCAS/' +
+	str(base_path + 'NCAS/' +
 	'MCM_working_group/guaiacol/PyCHAM_output/' +
 	'guaiacol_constrained_1e-3w_mt2p40_fullELVOC'),  
-	str('/Users/user/Library/CloudStorage/' +
-	'OneDrive-TheUniversityofManchester/NCAS/' +
+	str(base_path + 'NCAS/' +
 	'MCM_working_group/guaiacol/PyCHAM_output/' +
 	'guaiacol_constrained_1e-3w_mt24p0_fullELVOC'),  
-	str('/Users/user/Library/CloudStorage/' +
-	'OneDrive-TheUniversityofManchester/NCAS/' +
+	str(base_path + 'NCAS/' +
 	'MCM_working_group/guaiacol/PyCHAM_output/' +
 	'guaiacol_constrained_1e-4w_mt2p40_fullELVOC')]
 
@@ -47,18 +44,16 @@ conc_to_plot = ['m']
 
 
 # path to PyCHAM
-PyCHAM_path = str('/Users/user/Documents/GitHub/PyCHAM/PyCHAM')
+PyCHAM_path = str(base_path + 'GitHub/PyCHAM/PyCHAM')
 
 # name of plot
 plot_name = 'dry_pm_mass_vs_time'
 
 # path to save plot to
-save_path = str('/Users/user/Library/CloudStorage/OneDrive-' +
-	'TheUniversityofManchester/NCAS/MCM_working_group/guaiacol/PyCHAM_output')
+save_path = str(base_path + 'NCAS/MCM_working_group/guaiacol/PyCHAM_output')
 
 # path to observations in csv file
-csv_path = str('/Users/user/Library/CloudStorage/OneDrive-TheUniversity' +
-	'ofManchester/NCAS/MCM_working_group/guaiacol/' +
+csv_path = str(base_path + 'NCAS/MCM_working_group/guaiacol/' +
 	'SMPS_total_N_SA_V_Mass_for_MCM_corrected.csv')
 
 # column of observations file containing times
@@ -94,6 +89,7 @@ def conc_plot(res_path, labels, conc_to_plot, PyCHAM_path, plot_name, save_path,
 			for prog in retr_out.retr_out(self):
 				prog = prog
 		except:
+			import ipdb; ipdb.set_trace()
 			continue
 
 		# get concentrations
@@ -146,7 +142,7 @@ def conc_plot(res_path, labels, conc_to_plot, PyCHAM_path, plot_name, save_path,
 
 	ax0.set_ylabel(str('PM mass concentration ('  + 
 		'$\mathrm{\u00B5}$g$\,$m\u207B\u00B3)\n(no water)'), fontsize = 14)
-	ax0.set_xlabel(str('time since lights on (hours)'), fontsize = 14)
+	ax0.set_xlabel(str('Time since lights on (hours)'), fontsize = 14)
 	ax0.yaxis.set_tick_params(labelsize = 14, 
 		direction = 'in', which='both')
 	ax0.xaxis.set_tick_params(labelsize = 14, 
@@ -156,7 +152,7 @@ def conc_plot(res_path, labels, conc_to_plot, PyCHAM_path, plot_name, save_path,
 	# make directory if not already existing
 	if (os.path.isdir(str(save_path)) == False):
 		os.mkdir(str(save_path))
-	plt.savefig(str(save_path + '/' + plot_name + '.pdf'))
+	plt.savefig(str(save_path + '/' + plot_name + '.png'))
 		
 	return()
 

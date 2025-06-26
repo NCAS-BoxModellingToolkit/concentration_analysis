@@ -10,24 +10,26 @@ import os
 
 # user-defined variables start --------------------------------
 
+# base path to use
+base_path = 'C:/Users/Psymo/OneDrive - The University of Manchester/'
+
 # set path to results
-res_path = str('/Users/user/Library/CloudStorage/' +
-	'OneDrive-TheUniversityofManchester/NCAS/' +
+res_path = str(base_path + 'NCAS/' +
 	'MCM_working_group/guaiacol/PyCHAM_output/' +
 	'guaiacol_constrained_1e-3w_mt2p40_fullELVOC')
 
 # path to PyCHAM
-PyCHAM_path = str('/Users/user/Documents/GitHub/PyCHAM/PyCHAM')
+PyCHAM_path = str(base_path + 'GitHub/PyCHAM/PyCHAM')
 
 # chemical scheme name(s) of component to plot
 plot_name = ['DNOMCATECHOL', 'NOMCATECHOL', 'DNGUAIACOL', 'NGUAIACOL', 'OMPBZQONE', 'GUAIAOXMUC', 'NCATECHOL', 'OMCATECHOL', 'OMC4CO142OH', 'OMC5CO14OH', 'OMCATPBZQONE']
 plot_name = ['GUAIACOL', 'DNGUAIACOL', 'NOMCATECHOL']
 # phase(s) to plot
 phase = ['g', 'p', 'w']
+phase = ['g']
 
 # path to observations
-csv_path = str('/Users/user/Library/CloudStorage/OneDrive-TheUniversity' +
-	'ofManchester/NCAS/MCM_working_group/guaiacol/guaiacol_gas_phase_obs.csv')
+csv_path = str(base_path + 'NCAS/MCM_working_group/guaiacol/guaiacol_gas_phase_obs.csv')
 
 # column of observations file containing times
 t_col_indx = 0
@@ -97,7 +99,7 @@ def conc_plot(res_path, plot_name, phase, PyCHAM_path, csv_path, obs_plot,
 			yg = ((yg*1.e6/si.N_A)*y_MM[ci]*1.e6)
 
 			# plot against time (hours)
-			ax0.plot(thr, yg, label = str('simulated ' + plot_name[i] + 
+			ax0.plot(thr[thr>=1.]-1., yg[thr>=1.], label = str('simulated ' + plot_name[i] + 
 				' gas-phase'))
 
 			if (obs_plot[i] == 1):
@@ -108,7 +110,7 @@ def conc_plot(res_path, plot_name, phase, PyCHAM_path, csv_path, obs_plot,
 				# particle mass concentration
 				obs_thr = wb[:, t_col_indx].astype('float')
 				obs_g = wb[:, m_col_indx].astype('float')
-				ax0.plot(obs_thr+1., obs_g, 'k', label = str('observed ' + 
+				ax0.plot(obs_thr, obs_g, 'k', label = str('observed ' + 
 					plot_name[i] + ' gas-phase'))
 
 		if 'p' in phase: # particle-phase concentrations
@@ -146,9 +148,9 @@ def conc_plot(res_path, plot_name, phase, PyCHAM_path, csv_path, obs_plot,
 			ax0.plot(thr, yw, label = str(plot_name[i] + ' wall-phase'))
 	
 
-		ax0.set_ylabel(str('mass concentration ('  + 
+		ax0.set_ylabel(str('Mass concentration ('  + 
 			'$\mathrm{\u00B5}$g$\,$m\u207B\u00B3)'), fontsize = 14)
-		ax0.set_xlabel(str('time (hours)'), fontsize = 14)
+		ax0.set_xlabel(str('Time since lights on (hours)'), fontsize = 14)
 		ax0.yaxis.set_tick_params(labelsize = 14, 
 			direction = 'in', which='both')
 		ax0.xaxis.set_tick_params(labelsize = 14, 
@@ -158,7 +160,7 @@ def conc_plot(res_path, plot_name, phase, PyCHAM_path, csv_path, obs_plot,
 		# make directory if not already existing
 		if (os.path.isdir(str(res_path + '/images')) == False):
 			os.mkdir(str(res_path + '/images'))
-		plt.savefig(str(res_path + '/images/' + plot_name[i] + '.pdf'))
+		plt.savefig(str(res_path + '/images/' + plot_name[i] + '.png'))
 		
 	return()
 
