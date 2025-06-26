@@ -16,25 +16,32 @@ import openpyxl # for opening excel file
 res_path = [str('/Users/user/Library/CloudStorage/' +
 	'OneDrive-TheUniversityofManchester/NCAS/' +
 	'MCM_working_group/guaiacol/PyCHAM_output/' +
+	'guaiacol_constrained_1e-2w_mt2p40_fullELVOC'),  
+	str('/Users/user/Library/CloudStorage/' +
+	'OneDrive-TheUniversityofManchester/NCAS/' +
+	'MCM_working_group/guaiacol/PyCHAM_output/' +
+	'guaiacol_constrained_1e-2w_mt24p0_fullELVOC'),  
+	str('/Users/user/Library/CloudStorage/' +
+	'OneDrive-TheUniversityofManchester/NCAS/' +
+	'MCM_working_group/guaiacol/PyCHAM_output/' +
 	'guaiacol_constrained_1e-3w_mt2p40_fullELVOC'),  
 	str('/Users/user/Library/CloudStorage/' +
 	'OneDrive-TheUniversityofManchester/NCAS/' +
 	'MCM_working_group/guaiacol/PyCHAM_output/' +
-	'guaiacol_constrained_1e-3w_mt2p40')]
+	'guaiacol_constrained_1e-3w_mt24p0_fullELVOC'),  
+	str('/Users/user/Library/CloudStorage/' +
+	'OneDrive-TheUniversityofManchester/NCAS/' +
+	'MCM_working_group/guaiacol/PyCHAM_output/' +
+	'guaiacol_constrained_1e-4w_mt2p40_fullELVOC')]
 
 # set corresponding (to path to results) list of plot labels
 labels = [
-str('$C_w\mathrm{=1x10^{-2}\; g \, m\u207B\u00B3}$, $k_e$=4x10$^{-3}\,\mathrm{s^{-1}}$'),
-str('$C_w\mathrm{=1x10^{-2}\; g \, m\u207B\u00B3}$, $k_e$=4x10$^{-2}\,\mathrm{s^{-1}}$'),
 str('$C_w\mathrm{=1x10^{-2}\; g \, m\u207B\u00B3}$, $k_e$=4x10$^{-1}\,\mathrm{s^{-1}}$'),
-str('$C_w\mathrm{=1x10^{-3}\; g \, m\u207B\u00B3}$, $k_e$=4x10$^{-3}\,\mathrm{s^{-1}}$'),
-str('$C_w\mathrm{=1x10^{-3}\; g \, m\u207B\u00B3}$, $k_e$=4x10$^{-2}\,\mathrm{s^{-1}}$'), 
+str('$C_w\mathrm{=1x10^{-2}\; g \, m\u207B\u00B3}$, $k_e$=4x10$^{-2}\,\mathrm{s^{-1}}$'),
 str('$C_w\mathrm{=1x10^{-3}\; g \, m\u207B\u00B3}$, $k_e$=4x10$^{-1}\,\mathrm{s^{-1}}$'),
-str('$C_w\mathrm{=1x10^{-4}\; g \, m\u207B\u00B3}$, $k_e$=4x10$^{-3}\,\mathrm{s^{-1}}$'),
-str('$C_w\mathrm{=1x10^{-4}\; g \, m\u207B\u00B3}$, $k_e$=4x10$^{-2}\,\mathrm{s^{-1}}$'), 
+str('$C_w\mathrm{=1x10^{-3}\; g \, m\u207B\u00B3}$, $k_e$=4x10$^{-2}\,\mathrm{s^{-1}}$'), 
 str('$C_w\mathrm{=1x10^{-4}\; g \, m\u207B\u00B3}$, $k_e$=4x10$^{-1}\,\mathrm{s^{-1}}$')]
-labels = [str('$C_w\mathrm{=1x10^{-3}\; g \, m\u207B\u00B3}$, $k_e$=4x10$^{-1}\,\mathrm{s^{-1}}$ with \n% 6.99D-11*0.04 : GUAIACOL + OH = ELVOCp ; \n% KRO2NO : ELVOCp + NO = ELVOC ; \n% KRO2HO2 : ELVOCp + HO2 = ELVOCpp ;; \n% 4.0D-10*RO2 : ELVOCp = ELVOCpp ;'),
-str('$C_w\mathrm{=1x10^{-3}\; g \, m\u207B\u00B3}$, $k_e$=4x10$^{-1}\,\mathrm{s^{-1}}$ with \n6.99D-11*0.005 : GUAIACOL + OH = ELVOC ;')]
+
 # concentration(s) to plot (m for mass concentration)
 conc_to_plot = ['m']
 
@@ -127,7 +134,7 @@ def conc_plot(res_path, labels, conc_to_plot, PyCHAM_path, plot_name, save_path,
 		if 'fullELVOC' in res_pathi:
 			thr -= 1.
 
-		ax0.plot(thr, ppc, label = labels[resi])
+		ax0.plot(thr[thr>=0.], ppc[thr>=0.], label = labels[resi])
 
 	# open observed concentration
 	wb = np.loadtxt(csv_path, delimiter = ',', skiprows = 1, dtype='str')
@@ -139,7 +146,7 @@ def conc_plot(res_path, labels, conc_to_plot, PyCHAM_path, plot_name, save_path,
 
 	ax0.set_ylabel(str('PM mass concentration ('  + 
 		'$\mathrm{\u00B5}$g$\,$m\u207B\u00B3)\n(no water)'), fontsize = 14)
-	ax0.set_xlabel(str('time (hours)'), fontsize = 14)
+	ax0.set_xlabel(str('time since lights on (hours)'), fontsize = 14)
 	ax0.yaxis.set_tick_params(labelsize = 14, 
 		direction = 'in', which='both')
 	ax0.xaxis.set_tick_params(labelsize = 14, 
