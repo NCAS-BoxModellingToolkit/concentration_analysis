@@ -7,6 +7,7 @@ Plotting and statistical tools to work on simulated concentrations, all modules 
 * CdC_reporter returns the concentration and rate of change (with respect to time) of concentration of components at the end of the simulation
 * comp_names_file_rename stores the component names in a file with a name of the user's choosing
 * ind_component plots the temporal profile(s) of concentration of user-specified component(s)
+* ind_component_time_integrated_conc.py returns a print out of the time-integrated concentration of user-specified component(s)
 * MLM_generator_for_random_sample uses AutoML to create a machine learnt model for predicting secondary organic aerosol mass yields based on provided training data
 * NO_HO2_RO2pool_reporter returns the concentrations of NO, HO2 and the RO2 pool at the end of the simulation
 * total_particle_mass_from_number_size_distribution plots particle mass based on the particle number distribution across particle size bins
