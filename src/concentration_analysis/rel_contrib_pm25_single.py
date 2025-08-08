@@ -1,4 +1,5 @@
 '''script to quantify the relative contributions of sources and sinks to total PM2.5 mass concentration for a single household across a specified period'''
+'''script to quantify the relative contributions of sources and sinks to total PM2.5 mass concentration for a single household'''
 
 # import dependencies
 import numpy as np
@@ -193,6 +194,7 @@ def conc_plot(res_path, labels, PyCHAM_path, save_path, zero_water_flag, baselin
             diff_mass = np.trapezoid(baseline_pm25 - current_pm25, x=current_time)
 
             # calculate relative and normalized contributions
+            # calculate relative and normalised contributions
             with np.errstate(divide='ignore', invalid='ignore'):
                 rel_contrib = (diff_mass / sum_baseline_pm25) * 100.0 
                 rel_contrib = 0.0 if np.isnan(rel_contrib) or np.isinf(rel_contrib) else rel_contrib
@@ -209,6 +211,7 @@ def conc_plot(res_path, labels, PyCHAM_path, save_path, zero_water_flag, baselin
             print(f"\nTotal PM2.5 mass: '{labels[idx]}' = {current_total_mass:.2f} μgh/m³")
             print(f"Relative contribution to baseline '{labels[baseline_index]}': {rel_contrib:.2f} %")
             print(f"Normalized contribution to total PM2.5 mass change: {rel_contrib_norm:.2f} %")
+            print(f"Normalised contribution to total PM2.5 mass change: {rel_contrib_norm:.2f} %")
 
             # save diff for plotting later
             all_pm_diffs.append((current_time, pm_diff, labels[idx]))
