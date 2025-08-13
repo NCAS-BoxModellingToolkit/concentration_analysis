@@ -15,8 +15,6 @@ Plotting and statistical tools to work on simulated concentrations, all modules 
 * total_particle_vs_obs allows comparison of any number of simulated total particle concentrations against observations
 * SOA_yield returns the secondary organic aerosol mass yield (mass of SOA/mass of consumed VOC), in addition to any specified parameters, for any number of simulations 
 
-The src/package layout is explained [here](https://www.pyopensci.org/python-package-guide/package-structure-code/python-package-structure.html)
-
 For MLM_generator_for_random_sample.py:
 
 #### AutoML and Machine Learning Enhancements
