@@ -1,7 +1,4 @@
 # concentration_analysis
-
-## Version 0.0.0
-
 Analyse simulated concentrations.
 
 Plotting and statistical tools to work on simulated concentrations, all modules require user input through editing of the user-definition sections:
