@@ -1,6 +1,5 @@
-'''code to plot simulated concentrations of total particulate
-matter and compare against observations'''
-# concentrations may be from any number of simulations
+'''code to plot simulated contributions of individual 
+components to the particle phase'''
 
 # import depdencies
 import numpy as np
@@ -8,7 +7,6 @@ import sys
 import scipy. constants as si
 import matplotlib.pyplot as plt
 import os
-import openpyxl # for opening excel file
 import platform
 
 # user-defined variables start --------------------------------
@@ -20,60 +18,37 @@ if 'Darwin' in platform.system() or 'Linux' in platform.system():
 if 'Win' in platform.system() or 'Linux' in platform.system():
 	base_path = 'C:/Users/Psymo/OneDrive - The University of Manchester/'
 
-# set list of path to results
+# set path to results
 res_path = [str(base_path + 'NCAS/' +
 	'MCM_working_group/guaiacol/PyCHAM_output/' +
-	'1e-2w_mt2p40_NANNOOLAL_pcrh'),  
-	str(base_path + 'NCAS/' +
-	'MCM_working_group/guaiacol/PyCHAM_output/' +
-	'1e-2w_mt24p0_NANNOOLAL_pcrh_v5p5'),  
-	str(base_path + 'NCAS/' +
-	'MCM_working_group/guaiacol/PyCHAM_output/' +
-	'1e-3w_mt2p40_NANNOOLAL_pcrh'),  
-	str(base_path + 'NCAS/' +
-	'MCM_working_group/guaiacol/PyCHAM_output/' +
-	'1e-3w_mt24p0_NANNOOLAL_pcrh'),  
-	str(base_path + 'NCAS/' +
-	'MCM_working_group/guaiacol/PyCHAM_output/' +
-	'1e-4w_mt2p40_NANNOOLAL_pcrh')]
-
-# set corresponding (to path to results) list of plot labels
-labels = [
-str('$C_w\mathrm{=1x10^{-2}\; g \, m\u207B\u00B3}$, $k_e$=4x10$^{-1}\,\mathrm{s^{-1}}$'),
-str('$C_w\mathrm{=1x10^{-2}\; g \, m\u207B\u00B3}$, $k_e$=4x10$^{-2}\,\mathrm{s^{-1}}$'),
-str('$C_w\mathrm{=1x10^{-3}\; g \, m\u207B\u00B3}$, $k_e$=4x10$^{-1}\,\mathrm{s^{-1}}$'),
-str('$C_w\mathrm{=1x10^{-3}\; g \, m\u207B\u00B3}$, $k_e$=4x10$^{-2}\,\mathrm{s^{-1}}$'), 
-str('$C_w\mathrm{=1x10^{-4}\; g \, m\u207B\u00B3}$, $k_e$=4x10$^{-1}\,\mathrm{s^{-1}}$')]
-
-# concentration(s) to plot (m for mass concentration)
-conc_to_plot = ['m']
+	'1e-2w_mt24p0_NANNOOLAL_pcrh')]
 
 # path to PyCHAM
 PyCHAM_path = str(base_path + 'GitHub/PyCHAM/PyCHAM')
 
 # name of plot
-plot_name = 'dry_pm_mass_vs_time'
+plot_name = 'dry_pm_mass_frac_contributors_vs_time'
 
 # path to save plot to
 save_path = str(base_path + 'NCAS/MCM_working_group/guaiacol/PyCHAM_output')
 
-# path to observations in csv file
-csv_path = str(base_path + 'NCAS/MCM_working_group/guaiacol/' +
-	'SMPS_total_N_SA_V_Mass_for_MCM_corrected.csv')
+# whether (0) or not (1) to include water in particle-phase
+# mass fraction calculation
+anhydrous_flag = 1
 
-# column of observations file containing times
-t_col_indx = 1
-# column of observations file containing particle mass concentrations
-m_col_indx = 9
+# number of greatest contributing components to time-integrated
+# particle-phase mass concentration to plot (e.g. 6 is the top 
+# 6 contributors)
+top_num = 6
 
 # user-defined variables end --------------------------------
 
 # define function
-def conc_plot(res_path, labels, conc_to_plot, PyCHAM_path, plot_name, save_path, 
-	csv_path, t_col_indx, m_col_indx):
+def cont_plot(res_path, PyCHAM_path, plot_name, save_path, 
+			anhydrous_flag, top_num):
 
 	# prepare plot(s)
-	fig, (ax0) = plt.subplots(nrows=1, ncols=1, figsize=(9, 6))
+	fig, (ax0) = plt.subplots(nrows=1, ncols=1, figsize=(6, 4))
 
 	# ensure PyCHAM can be seen
 	sys.path.append(PyCHAM_path)
@@ -111,6 +86,9 @@ def conc_plot(res_path, labels, conc_to_plot, PyCHAM_path, plot_name, save_path,
 		# get number of components
 		nc = self.ro_obj.nc
 
+		# get names of components
+		comp_names = self.ro_obj.names_of_comp
+
 		# particle-phase concentrations of all components (# molecules/cm^3)
 		ppc = yrec[:, self.ro_obj.nc:-self.ro_obj.nc*self.ro_obj.wf]
 
@@ -121,31 +99,45 @@ def conc_plot(res_path, labels, conc_to_plot, PyCHAM_path, plot_name, save_path,
 
 		# convert # molecules/cm3 to moles/m^3
 		ppc[:, 0:nc] = (ppc[:, 0:nc]/si.N_A)*1.e6
+		
+		if (anhydrous_flag == 1):
+			# zero water
+			ppc[:, self.ro_obj.H2O_ind] = 0.
 
-		# zero water
-		ppc[:, self.ro_obj.H2O_ind] = 0.
-
-		# convert moles/m3 to ug/m^3
+		# convert moles/m^3 to ug/m^3
 		ppc[:, 0:nc] = ppc[:, 0:nc]*y_MM*1.e6
 
 		# sum over components for total dry particle mass concentration
 		# over time (ug/m^3)
-		ppc = np.sum(ppc[:, 0:nc], axis=1)
+		ppc_tot = (np.sum(ppc[:, 0:nc], axis=1)).reshape(-1, 1)
 
-		thr -= 1. # remove spin-up time
+		# prepare to hold particle-phase mass fractions of
+		# each component over time (%)
+		ppmf = np.zeros((ppc.shape[0], nc))
 
-		ax0.plot(thr[thr>=0.], ppc[thr>=0.], label = labels[resi])
+		# non-zero indices
+		nzi = ppc_tot[:, 0] != 0.
 
-	# open observed concentration
-	wb = np.loadtxt(csv_path, delimiter = ',', skiprows = 1, dtype='str')
-	# get observed time through experiment and particle mass concentration
-	obs_pm_thr = wb[:, t_col_indx].astype('float')
-	obs_pm_mass = wb[:, m_col_indx].astype('float')
+		# get particle-phase mass fractions of each component over time
+		# (%)
+		ppmf[nzi, :] = (ppc[nzi, 0:nc]/ppc_tot[nzi, :])*100.
 
-	ax0.plot(obs_pm_thr, obs_pm_mass, 'k', label = 'observed')
+		# get order of components in ascending order of their
+		# time-integrated particle-phase mass fraction
+		sort_index = np.argsort(np.sum(ppmf, axis=0))
 
-	ax0.set_ylabel(str('PM mass concentration (anhydrous) / '  + 
-		'$\mathrm{\u00B5}$g$\,$m\u207B\u00B3'), fontsize = 14)
+		# only include times when roof open
+		tindx = (thr >= 1.)
+
+		# loop through components in descending order of
+		# their time-integrated particle phase mass fraction
+		for ci in range(1, top_num+1):
+			
+			ax0.plot(thr[tindx]-1., ppmf[tindx, sort_index[-(ci)]], label = comp_names[sort_index[-(ci)]])
+
+	if (anhydrous_flag == 1):
+		ax0.set_ylabel(str('PM mass fraction (anhydrous) / %'), 
+				 fontsize = 14)
 	ax0.set_xlabel(str('Time'), fontsize = 14)
 	ax0.yaxis.set_tick_params(labelsize = 14, 
 		direction = 'in', which='both')
@@ -181,5 +173,5 @@ def self_def(dir_path_value):
 	return(self)
 
 # call function
-conc_plot(res_path, labels, conc_to_plot, PyCHAM_path, plot_name, save_path, 
-	csv_path, t_col_indx, m_col_indx)
+cont_plot(res_path, PyCHAM_path, plot_name, save_path, 
+		  anhydrous_flag, top_num)

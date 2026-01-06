@@ -9,19 +9,25 @@ import scipy. constants as si
 import matplotlib.pyplot as plt
 import os
 import openpyxl # for opening excel file
+import platform
 
 # user-defined variables start --------------------------------
 
-# start of paths
-base_path = 'C:/Users/Psymo/OneDrive - The University of Manchester/'
+# set base path, depending on operating system
+if 'Darwin' in platform.system() or 'Linux' in platform.system():
+	base_path = str('/Users/user/Library/CloudStorage/' +
+			'OneDrive-TheUniversityofManchester/')
+if 'Win' in platform.system() or 'Linux' in platform.system():
+	base_path = 'C:/Users/Psymo/OneDrive - The University of Manchester/'
+	
 # set list of path to results
 res_path = [str(base_path + 'NCAS/' +
 	'MCM_working_group/guaiacol/PyCHAM_output/' +
-	'guaiacol_constrained_1e-3w_mt2p40_fullELVOC_120sb')]
+	'1e-2w_mt24p0_NANNOOLAL_pcrh_120sb')]
 
 # set corresponding (to path to results) list of plot labels
 labels = [
-str('$C_w\mathrm{=1x10^{-3}\; g \, m\u207B\u00B3}$, $k_e$=4x10$^{-1}\,\mathrm{s^{-1}}$')]
+str('$C_w\mathrm{=1x10^{-2}\; g \, m\u207B\u00B3}$, $k_e$=4x10$^{-2}\,\mathrm{s^{-1}}$')]
 
 # concentration(s) to plot (m for mass concentration)
 conc_to_plot = ['m']
@@ -33,7 +39,7 @@ plot_name = 'dry_pm_mass_fromN_vs_time'
 save_path = str(base_path + 'NCAS/MCM_working_group/guaiacol/PyCHAM_output')
 
 # state the assumed density of particle components (g/cm^3)
-rho = 1.
+rho = 1.4
 
 # time (hour) through experiment to treat as zero and therefore start
 # plotting results at
@@ -114,11 +120,11 @@ def var_get(self):
 	t_array = np.loadtxt(fname, delimiter=',', skiprows=1)
 	thr = t_array/3600.0 # convert from s to hr
 
-	# particle size bin bounds (radii) (um3)
+	# particle size bin bounds (radii) (um^3)
 	fname = str(self.dir_path + '/size_bin_bounds')
 	rbou_rec = np.loadtxt(fname, delimiter=',', skiprows=1)
 
-	# withdraw number-size distributions (# particles/cm3 (air))
+	# withdraw number-size distributions (# particles/cm^3 (air))
 	fname = str(self.dir_path + '/particle_number_concentration_dry')
 	Ndry = np.loadtxt(fname, delimiter=',', skiprows=1)
 	

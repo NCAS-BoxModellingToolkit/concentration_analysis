@@ -7,26 +7,31 @@ import sys
 import scipy. constants as si
 import matplotlib.pyplot as plt
 import os
+import platform
 
 # user-defined variables start --------------------------------
 
-# base path to use
-base_path = 'C:/Users/Psymo/OneDrive - The University of Manchester/'
+# set base path, depending on operating system
+if 'Darwin' in platform.system() or 'Linux' in platform.system():
+	base_path = str('/Users/user/Library/CloudStorage/' +
+			'OneDrive-TheUniversityofManchester/')
+if 'Win' in platform.system() or 'Linux' in platform.system():
+	base_path = 'C:/Users/Psymo/OneDrive - The University of Manchester/'
 
 # set path to results
 res_path = str(base_path + 'NCAS/' +
 	'MCM_working_group/guaiacol/PyCHAM_output/' +
-	'guaiacol_constrained_1e-3w_mt2p40_fullELVOC')
+	'1e-2w_mt24p0_NANNOOLAL_pcrh_v5p5')
 
 # path to PyCHAM
 PyCHAM_path = str(base_path + 'GitHub/PyCHAM/PyCHAM')
 
 # chemical scheme name(s) of component to plot
 plot_name = ['DNOMCATECHOL', 'NOMCATECHOL', 'DNGUAIACOL', 'NGUAIACOL', 'OMPBZQONE', 'GUAIAOXMUC', 'NCATECHOL', 'OMCATECHOL', 'OMC4CO142OH', 'OMC5CO14OH', 'OMCATPBZQONE']
-plot_name = ['GUAIACOL', 'DNGUAIACOL', 'NOMCATECHOL']
+plot_name = ['DNGUAIACOL']
 # phase(s) to plot
 phase = ['g', 'p', 'w']
-phase = ['g']
+#phase = ['g']
 
 # path to observations
 csv_path = str(base_path + 'NCAS/MCM_working_group/guaiacol/guaiacol_gas_phase_obs.csv')
@@ -38,13 +43,16 @@ m_col_indx = 1
 
 # state which components in plot_name have corresponding observations
 obs_plot = np.zeros((len(plot_name)))
-obs_plot[0] = 1
+obs_plot[0] = 0
+
+# state which units to plot abundace in (m for ug/m^3) (p for ppb)
+unit_marker = 'm'
 
 # user-defined variables end --------------------------------
 
 # define function
 def conc_plot(res_path, plot_name, phase, PyCHAM_path, csv_path, obs_plot, 
-	t_col_indx, m_col_indx):
+	t_col_indx, m_col_indx, unit_marker):
 
 	# create the self object so that results path is stored
 	self = self_def(res_path)
@@ -92,24 +100,38 @@ def conc_plot(res_path, plot_name, phase, PyCHAM_path, csv_path, obs_plot,
 			# factor to convert ppb to molecules/cm^3
 			cfac = np.array((self.ro_obj.cfac)).reshape(-1)
 		
-			# convert to molecules/cm^3
-			yg = yg*cfac
+			if (unit_marker == 'm'):
+				# convert to molecules/cm^3
+				yg = yg*cfac
 		
-			# convert to ug/m^3
-			yg = ((yg*1.e6/si.N_A)*y_MM[ci]*1.e6)
+				# convert to ug/m^3
+				yg = ((yg*1.e6/si.N_A)*y_MM[ci]*1.e6)
 
 			# plot against time (hours)
 			ax0.plot(thr[thr>=1.]-1., yg[thr>=1.], label = str('simulated ' + plot_name[i] + 
 				' gas-phase'))
 
 			if (obs_plot[i] == 1):
+
 				# open observed concentration
 				wb = np.loadtxt(csv_path, delimiter = ',', 
 					skiprows = 1, dtype='str')
 				# get observed time through experiment and 
-				# particle mass concentration
+				# mass concentration
 				obs_thr = wb[:, t_col_indx].astype('float')
 				obs_g = wb[:, m_col_indx].astype('float')
+
+				# interpolate the factor for converting ppb to molecules/cm^3
+				# to align with observed times
+				cfac_obs = np.interp(obs_thr, thr-1., cfac)
+
+				if (unit_marker == 'p'):
+					# convert ug/m^3 to molecules/cm^3
+					obs_g = ((obs_g/1.e6/y_MM[ci]/1.e6)*si.N_A)
+			 
+			 		# convert molecules/cm^3 to ppb
+					obs_g = obs_g/cfac_obs
+
 				ax0.plot(obs_thr, obs_g, 'k', label = str('observed ' + 
 					plot_name[i] + ' gas-phase'))
 
@@ -128,7 +150,7 @@ def conc_plot(res_path, plot_name, phase, PyCHAM_path, csv_path, obs_plot,
 			yp = ((yp*1.e6/si.N_A)*y_MM[ci]*1.e6)
 
 			# plot against time (hours)
-			ax0.plot(thr, yp, label = str(plot_name[i] + ' particle-phase'))
+			ax0.plot(thr[thr>=1.]-1., yp[thr>=1.], label = str('simulated ' + plot_name[i] + ' particle-phase'))
 
 		if 'w' in phase: # non-particle surface concentrations
 
@@ -145,23 +167,36 @@ def conc_plot(res_path, plot_name, phase, PyCHAM_path, csv_path, obs_plot,
 			yw = ((yw*1.e6/si.N_A)*y_MM[ci]*1.e6)
 
 			# plot against time (hours)
-			ax0.plot(thr, yw, label = str(plot_name[i] + ' wall-phase'))
+			ax0.plot(thr[thr>=1.]-1., yw[thr>=1.], label = str('simulated ' + plot_name[i] + ' wall-phase'))
 	
 
-		ax0.set_ylabel(str('Mass concentration ('  + 
-			'$\mathrm{\u00B5}$g$\,$m\u207B\u00B3)'), fontsize = 14)
-		ax0.set_xlabel(str('Time since lights on (hours)'), fontsize = 14)
+		if (unit_marker == 'm'):
+			ax0.set_ylabel(str(plot_name[i] + ' / '  + 
+				'$\mathrm{\u00B5}$g$\,$m\u207B\u00B3'), fontsize = 14)
+		if (unit_marker == 'p'):
+			ax0.set_ylabel(str(plot_name[i] + ' / ppb '), fontsize = 14)
+		ax0.set_xlabel(str('Time'), fontsize = 14)
 		ax0.yaxis.set_tick_params(labelsize = 14, 
 			direction = 'in', which='both')
 		ax0.xaxis.set_tick_params(labelsize = 14, 
 			direction = 'in', which='both')
+
 		ax0.legend()
+
+		# replace time through simulation with clock time on abscissa
+		xticks = [0., 0.5, 1., 1.5]
+		xlabels = ['08:30', '09:00', '09:30', '10:00']
+		ax0.set_xticks(xticks, labels=xlabels)
+	
+		# show grid lines
+		ax0.grid(visible=True, which='major', axis='both')
+
 		plt.tight_layout()
 		# make directory if not already existing
 		if (os.path.isdir(str(res_path + '/images')) == False):
 			os.mkdir(str(res_path + '/images'))
-		plt.savefig(str(res_path + '/images/' + plot_name[i] + '.png'))
-		
+		plt.savefig(str(res_path + '/images/' + plot_name[i] + '.pdf'))
+
 	return()
 
 # function to setup self
@@ -176,4 +211,5 @@ def self_def(dir_path_value):
 	return(self)
 
 # call function
-conc_plot(res_path, plot_name, phase, PyCHAM_path, csv_path, obs_plot, t_col_indx, m_col_indx)
+conc_plot(res_path, plot_name, phase, PyCHAM_path, csv_path, 
+		  obs_plot, t_col_indx, m_col_indx, unit_marker)
