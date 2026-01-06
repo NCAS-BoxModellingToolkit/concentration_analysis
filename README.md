@@ -1,8 +1,10 @@
 # concentration_analysis
 
-## Version 0.0.0
+## Version 0.1.0
 
 Analyse simulated concentrations.
+
+Example outputs of AtCHEM2, INCHEM-Py and PyCHAM are stored in src/concentration_analysis/example_outputs, with eponymous file names respective of source model.
 
 Plotting and statistical tools to work on simulated concentrations, all modules require user input through editing of the user-definition sections:
 
@@ -12,11 +14,8 @@ Plotting and statistical tools to work on simulated concentrations, all modules 
 * ind_component plots the temporal profile(s) of concentration of user-specified component(s)
 * MLM_generator_for_random_sample uses AutoML to create a machine learnt model for predicting secondary organic aerosol mass yields based on provided training data
 * NO_HO2_RO2pool_reporter returns the concentrations of NO, HO2 and the RO2 pool at the end of the simulation
-<<<<<<< Updated upstream
-=======
 * particle_phase_contributors plots the temporal profiles of mass fractions of individual components in the particle phase
 * total_particle_mass_from_number_size_distribution plots particle mass based on the particle number distribution across particle size bins
->>>>>>> Stashed changes
 * total_particle_vs_obs allows comparison of any number of simulated total particle concentrations against observations
 * SOA_yield returns the secondary organic aerosol mass yield (mass of SOA/mass of consumed VOC), in addition to any specified parameters, for any number of simulations 
 
