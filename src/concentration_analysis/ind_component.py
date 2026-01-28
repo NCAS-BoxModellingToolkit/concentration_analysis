@@ -19,19 +19,31 @@ if 'Win' in platform.system() or 'Linux' in platform.system():
 	base_path = 'C:/Users/Psymo/OneDrive - The University of Manchester/'
 
 # set path to results
-res_path = str(base_path + 'NCAS/' +
-	'MCM_working_group/guaiacol/PyCHAM_output/' +
-	'1e-2w_mt24p0_NANNOOLAL_pcrh_v5p5')
+res_path = [str(base_path + 'GitHub/PyCHAM/PyCHAM/output/mcm_export_scheme2/benzene_run_output_simon_50_seed'),
+	str(base_path + 'GitHub/PyCHAM/PyCHAM/output/mcm_export_scheme2/benzene_run_output_simon_80_seed')]
 
 # path to PyCHAM
 PyCHAM_path = str(base_path + 'GitHub/PyCHAM/PyCHAM')
 
 # chemical scheme name(s) of component to plot
 plot_name = ['DNOMCATECHOL', 'NOMCATECHOL', 'DNGUAIACOL', 'NGUAIACOL', 'OMPBZQONE', 'GUAIAOXMUC', 'NCATECHOL', 'OMCATECHOL', 'OMC4CO142OH', 'OMC5CO14OH', 'OMCATPBZQONE']
-plot_name = ['DNGUAIACOL']
+plot_name = ['ENCATECH']
+
 # phase(s) to plot
 phase = ['g', 'p', 'w']
-#phase = ['g']
+phase = ['g', 'p', 'fp_vs_gp_sum']
+
+# labels for gas-phase plots
+gas_phase_labels = ['gas-phase 50 % RH', 'gas-phase 80 % RH']
+
+# labels for particle-phase plots
+particle_phase_labels = ['particle-phase 50 % RH', 'particle-phase 80 % RH']
+
+# labels for fraction plots
+fraction_labels = ['fraction 50 % RH', 'fraction 80 % RH']
+
+# fraction line colors
+fraction_line_colors = ['tab:orange', 'tab:red']
 
 # path to observations
 csv_path = str(base_path + 'NCAS/MCM_working_group/guaiacol/guaiacol_gas_phase_obs.csv')
@@ -54,148 +66,176 @@ unit_marker = 'm'
 def conc_plot(res_path, plot_name, phase, PyCHAM_path, csv_path, obs_plot, 
 	t_col_indx, m_col_indx, unit_marker):
 
-	# create the self object so that results path is stored
-	self = self_def(res_path)
+	resi = -1 # count on results 
 
-	# ensure PyCHAM can be seeb
-	sys.path.append(PyCHAM_path)
-	import retr_out
+	# initiate new figure here
+	fig, (ax0) = plt.subplots(nrows=1, ncols=1, figsize=(6, 4))
 
-	# import results
-	for prog in retr_out.retr_out(self):
-		prog = prog
+	# in case a fraction per phase plot also wanted
+	if ('fp_vs_gp_sum' in phase):
+		ax1 = ax0.twinx() # parasite axis
+		max_pfrac = 0. # prepare to record maximum particle-phase fraction
 
-	# get concentrations
-	yrec = np.zeros((self.ro_obj.yrec.shape[0], 
-		self.ro_obj.yrec.shape[1]))
-	yrec[:, :] = self.ro_obj.yrec[:, :]
+	for res_path_now in res_path: # loop through results
 
-	# get molar masses of component (g/mol)
-	y_MM = self.ro_obj.comp_MW
+		resi += 1 # count on results 
 
-	# get time (hours) through simulation
-	thr = self.ro_obj.thr
+		# create the self object so that results path is stored
+		self = self_def(res_path_now)
 
-	# get number of components
-	nc = self.ro_obj.nc
+		# ensure PyCHAM can be seen
+		sys.path.append(PyCHAM_path)
+		import retr_out
 
-	# get names of components
-	comp_names = self.ro_obj.names_of_comp
+		# import results
+		for prog in retr_out.retr_out(self):
+			prog = prog
 
-	# loop through components
-	for i in range(len(plot_name)):
+		# get concentrations
+		yrec = np.zeros((self.ro_obj.yrec.shape[0], 
+			self.ro_obj.yrec.shape[1]))
+		yrec[:, :] = self.ro_obj.yrec[:, :]
 
-		# get index of this component
-		ci = comp_names.index(plot_name[i])
+		# get molar masses of component (g/mol)
+		y_MM = self.ro_obj.comp_MW
 
-		# get number of non-particle surfaces
-		ns = self.ro_obj.wf	
+		# get time (hours) through simulation
+		thr = self.ro_obj.thr
 
-		# prepare plots
-		fig, (ax0) = plt.subplots(nrows=1, ncols=1, figsize=(6, 4))
+		# get number of components
+		nc = self.ro_obj.nc
 
-		if 'g' in phase: # gas-phase concentrations
-			yg = yrec[:, ci] # (ppb)
+		# get names of components
+		comp_names = self.ro_obj.names_of_comp
 
-			# factor to convert ppb to molecules/cm^3
-			cfac = np.array((self.ro_obj.cfac)).reshape(-1)
-		
-			if (unit_marker == 'm'):
-				# convert to molecules/cm^3
-				yg = yg*cfac
-		
-				# convert to ug/m^3
-				yg = ((yg*1.e6/si.N_A)*y_MM[ci]*1.e6)
+		# loop through components
+		for i in range(len(plot_name)):
 
-			# plot against time (hours)
-			ax0.plot(thr[thr>=1.]-1., yg[thr>=1.], label = str('simulated ' + plot_name[i] + 
-				' gas-phase'))
+			# get index of this component
+			ci = comp_names.index(plot_name[i])
 
-			if (obs_plot[i] == 1):
+			# get number of non-particle surfaces
+			ns = self.ro_obj.wf
 
-				# open observed concentration
-				wb = np.loadtxt(csv_path, delimiter = ',', 
-					skiprows = 1, dtype='str')
-				# get observed time through experiment and 
-				# mass concentration
-				obs_thr = wb[:, t_col_indx].astype('float')
-				obs_g = wb[:, m_col_indx].astype('float')
+			# if multiple components being considered then initiate new figure here
+			if (len(plot_name) > 1):
+				fig, (ax0) = plt.subplots(nrows=1, ncols=1, figsize=(6, 4))
 
-				# interpolate the factor for converting ppb to molecules/cm^3
-				# to align with observed times
-				cfac_obs = np.interp(obs_thr, thr-1., cfac)
+			if 'g' in phase: # gas-phase concentrations
+				yg = yrec[:, ci] # (ppb)
 
-				if (unit_marker == 'p'):
-					# convert ug/m^3 to molecules/cm^3
-					obs_g = ((obs_g/1.e6/y_MM[ci]/1.e6)*si.N_A)
-			 
-			 		# convert molecules/cm^3 to ppb
-					obs_g = obs_g/cfac_obs
-
-				ax0.plot(obs_thr, obs_g, 'k', label = str('observed ' + 
-					plot_name[i] + ' gas-phase'))
-
-		if 'p' in phase: # particle-phase concentrations
-
-			# number of particle size bins
-			nsb = self.ro_obj.nsb-ns
+				# factor to convert ppb to molecules/cm^3
+				cfac = np.array((self.ro_obj.cfac)).reshape(-1)
 			
-			# molecules/cm^3
-			yp = yrec[:, nc:nc*(nsb+1)]
+				if (unit_marker == 'm'):
+					# convert to molecules/cm^3
+					yg = yg*cfac
+			
+					# convert to ug/m^3
+					yg = ((yg*1.e6/si.N_A)*y_MM[ci]*1.e6)
+				
+				# plot against time (hours)
+				ax0.plot(thr, yg, label = gas_phase_labels[resi])
 
-			# sum concentrations for this component over bins
-			yp = np.sum(yp[:, ci::nc], axis=1)
+				if (obs_plot[i] == 1):
 
-			# convert to ug/m^3
-			yp = ((yp*1.e6/si.N_A)*y_MM[ci]*1.e6)
+					# open observed concentration
+					wb = np.loadtxt(csv_path, delimiter = ',', 
+						skiprows = 1, dtype='str')
+					# get observed time through experiment and 
+					# mass concentration
+					obs_thr = wb[:, t_col_indx].astype('float')
+					obs_g = wb[:, m_col_indx].astype('float')
 
-			# plot against time (hours)
-			ax0.plot(thr[thr>=1.]-1., yp[thr>=1.], label = str('simulated ' + plot_name[i] + ' particle-phase'))
+					# interpolate the factor for converting ppb to molecules/cm^3
+					# to align with observed times
+					cfac_obs = np.interp(obs_thr, thr-1., cfac)
 
-		if 'w' in phase: # non-particle surface concentrations
+					if (unit_marker == 'p'):
+						# convert ug/m^3 to molecules/cm^3
+						obs_g = ((obs_g/1.e6/y_MM[ci]/1.e6)*si.N_A)
+				
+						# convert molecules/cm^3 to ppb
+						obs_g = obs_g/cfac_obs
 
-			# number of particle size bins
-			nsb = self.ro_obj.nsb-ns
-		
-			# molecules/cm^3
-			yw = yrec[:, nc*(nsb+1)::]
+					ax0.plot(obs_thr, obs_g, 'k', label = str('observed ' + 
+						plot_name[i] + ' gas-phase'))
 
-			# sum concentrations for this component over bins
-			yw = np.sum(yw[:, ci::nc], axis=1)
+			if 'p' in phase: # particle-phase concentrations
 
-			# convert to ug/m^3
-			yw = ((yw*1.e6/si.N_A)*y_MM[ci]*1.e6)
+				# number of particle size bins
+				nsb = self.ro_obj.nsb-ns
+				
+				# molecules/cm^3
+				yp = yrec[:, nc:nc*(nsb+1)]
 
-			# plot against time (hours)
-			ax0.plot(thr[thr>=1.]-1., yw[thr>=1.], label = str('simulated ' + plot_name[i] + ' wall-phase'))
+				# sum concentrations for this component over bins
+				yp = np.sum(yp[:, ci::nc], axis=1)
+
+				# convert to ug/m^3
+				yp = ((yp*1.e6/si.N_A)*y_MM[ci]*1.e6)
+
+				# plot against time (hours)
+				ax0.plot(thr, yp, label = particle_phase_labels[resi])
+
+			if 'w' in phase: # non-particle surface concentrations
+
+				# number of particle size bins
+				nsb = self.ro_obj.nsb-ns
+			
+				# molecules/cm^3
+				yw = yrec[:, nc*(nsb+1)::]
+
+				# sum concentrations for this component over bins
+				yw = np.sum(yw[:, ci::nc], axis=1)
+
+				# convert to ug/m^3
+				yw = ((yw*1.e6/si.N_A)*y_MM[ci]*1.e6)
+
+				# plot against time (hours)
+				ax0.plot(thr[thr>=1.]-1., yw[thr>=1.], label = str('simulated ' + plot_name[i] + ' wall-phase'))
 	
+			# fraction of component in particle-phase compared to sum across particle and gas phases
+			if 'fp_vs_gp_sum' in phase:
 
-		if (unit_marker == 'm'):
-			ax0.set_ylabel(str(plot_name[i] + ' / '  + 
-				'$\mathrm{\u00B5}$g$\,$m\u207B\u00B3'), fontsize = 14)
-		if (unit_marker == 'p'):
-			ax0.set_ylabel(str(plot_name[i] + ' / ppb '), fontsize = 14)
-		ax0.set_xlabel(str('Time'), fontsize = 14)
-		ax0.yaxis.set_tick_params(labelsize = 14, 
-			direction = 'in', which='both')
-		ax0.xaxis.set_tick_params(labelsize = 14, 
-			direction = 'in', which='both')
+				# indices of times when summed mass not zero 
+				nz_ti = (yp+yg != 0.)
+				pfrac = yp[nz_ti]/(yp[nz_ti]+yg[nz_ti])
+				p3, = ax1.plot(thr[nz_ti], pfrac, label = fraction_labels[resi], 
+				   color = fraction_line_colors[resi], linestyle = '--')
+				max_pfrac = np.max([max_pfrac, np.max(pfrac)])
+				ax1.set_ylabel('particle-phase mass/\n(particle-phase+gas-phase mass)', size=14, 
+					rotation=270, labelpad=40) # vertical axis label
 
-		ax0.legend()
+	if (unit_marker == 'm'):
+		ax0.set_ylabel(str(plot_name[i] + ' / '  + 
+			'$\mathrm{\u00B5}$g$\,$m\u207B\u00B3'), fontsize = 14)
+	if (unit_marker == 'p'):
+		ax0.set_ylabel(str(plot_name[i] + ' / ppb '), fontsize = 14)
+	ax0.set_xlabel(str('Time'), fontsize = 14)
+	ax0.yaxis.set_tick_params(labelsize = 14, 
+		direction = 'in', which='both')
+	ax0.xaxis.set_tick_params(labelsize = 14, 
+		direction = 'in', which='both')
 
-		# replace time through simulation with clock time on abscissa
-		xticks = [0., 0.5, 1., 1.5]
-		xlabels = ['08:30', '09:00', '09:30', '10:00']
-		ax0.set_xticks(xticks, labels=xlabels)
-	
-		# show grid lines
-		ax0.grid(visible=True, which='major', axis='both')
+	ax1.set_ylim(bottom=0.0, top=max_pfrac)
 
-		plt.tight_layout()
-		# make directory if not already existing
-		if (os.path.isdir(str(res_path + '/images')) == False):
-			os.mkdir(str(res_path + '/images'))
-		plt.savefig(str(res_path + '/images/' + plot_name[i] + '.pdf'))
+	ax0.legend(loc='center left')
+	ax1.legend(loc='center right')
+
+	# replace time through simulation with clock time on abscissa
+	#xticks = [0., 0.5, 1., 1.5]
+	#xlabels = ['08:30', '09:00', '09:30', '10:00']
+	#ax0.set_xticks(xticks, labels=xlabels)
+
+	# show grid lines
+	ax0.grid(visible=True, which='major', axis='both')
+
+	plt.tight_layout()
+	# make directory if not already existing
+	if (os.path.isdir(str(res_path_now + '/images')) == False):
+		os.mkdir(str(res_path_now + '/images'))
+	plt.savefig(str(res_path_now + '/images/' + plot_name[i] + '.pdf'))
 
 	return()
 

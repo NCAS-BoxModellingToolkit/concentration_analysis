@@ -26,7 +26,7 @@ res_path = [str(base_path + 'NCAS/' +
 	'1e-2w_mt2p40_NANNOOLAL_pcrh'),  
 	str(base_path + 'NCAS/' +
 	'MCM_working_group/guaiacol/PyCHAM_output/' +
-	'1e-2w_mt24p0_NANNOOLAL_pcrh_v5p5'),  
+	'1e-2w_mt24p0_NANNOOLAL_pcrh'),  
 	str(base_path + 'NCAS/' +
 	'MCM_working_group/guaiacol/PyCHAM_output/' +
 	'1e-3w_mt2p40_NANNOOLAL_pcrh'),  
@@ -80,6 +80,12 @@ def conc_plot(res_path, labels, conc_to_plot, PyCHAM_path, plot_name, save_path,
 	import retr_out
 
 	resi = -1 # count on simulation results
+
+	# open observed concentration
+	wb = np.loadtxt(csv_path, delimiter = ',', skiprows = 1, dtype='str')
+	# get observed time through experiment and particle mass concentration
+	obs_pm_thr = wb[:, t_col_indx].astype('float')
+	obs_pm_mass = wb[:, m_col_indx].astype('float')
 
 	# loop through simulations
 	for res_pathi in res_path:
@@ -136,13 +142,21 @@ def conc_plot(res_path, labels, conc_to_plot, PyCHAM_path, plot_name, save_path,
 
 		ax0.plot(thr[thr>=0.], ppc[thr>=0.], label = labels[resi])
 
-	# open observed concentration
-	wb = np.loadtxt(csv_path, delimiter = ',', skiprows = 1, dtype='str')
-	# get observed time through experiment and particle mass concentration
-	obs_pm_thr = wb[:, t_col_indx].astype('float')
-	obs_pm_mass = wb[:, m_col_indx].astype('float')
+		# using just the simulation results within observed time,
+		# interpolate simulated results to times of observations
+		t_indx = (thr>=obs_pm_thr[0])*(thr<=obs_pm_thr[-1])
+
+		ppc_sim = np.interp(obs_pm_thr, thr[t_indx], ppc[t_indx])
+
+		# root mean square error
+		rmse = (np.sum(((obs_pm_mass-ppc_sim)**2.))/len(obs_pm_mass))**0.5
+
+		# state root mean square error beside plot
+		ax0.text(max(thr), ppc[-1], str(round(rmse, 0)), fontsize = 14)
 
 	ax0.plot(obs_pm_thr, obs_pm_mass, 'k', label = 'observed')
+	print(min(obs_pm_thr))
+	ax0.set_xlim(left=-0.05, right=1.6)
 
 	ax0.set_ylabel(str('PM mass concentration (anhydrous) / '  + 
 		'$\mathrm{\u00B5}$g$\,$m\u207B\u00B3'), fontsize = 14)
